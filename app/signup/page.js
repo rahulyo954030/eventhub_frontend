@@ -10,6 +10,7 @@ import { getAuthFeedback } from '@/utils/helpers';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import FormField from '@/components/ui/FormField';
 import FormAlert from '@/components/ui/FormAlert';
+import PasswordInput from '@/components/ui/PasswordInput';
 import Logo from '@/components/ui/Logo';
 
 function SignupForm() {
@@ -125,9 +126,8 @@ function SignupForm() {
             />
           </FormField>
           <FormField label="Password" required error={errors.password?.message} hint="At least 8 characters.">
-            <input
-              type="password"
-              className={`input-field ${errors.password ? 'input-field-error' : ''}`}
+            <PasswordInput
+              className={errors.password ? 'input-field-error' : ''}
               {...register('password', {
                 required: 'Password is required',
                 minLength: { value: 8, message: 'At least 8 characters' },
@@ -135,9 +135,8 @@ function SignupForm() {
             />
           </FormField>
           <FormField label="Confirm password" required error={errors.confirmPassword?.message}>
-            <input
-              type="password"
-              className={`input-field ${errors.confirmPassword ? 'input-field-error' : ''}`}
+            <PasswordInput
+              className={errors.confirmPassword ? 'input-field-error' : ''}
               {...register('confirmPassword', {
                 required: 'Please confirm your password',
                 validate: (v) => v === watch('password') || 'Passwords do not match',

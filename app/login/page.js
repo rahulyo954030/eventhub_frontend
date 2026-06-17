@@ -10,6 +10,7 @@ import { getPostLoginPath } from '@/utils/authRedirect';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import FormField from '@/components/ui/FormField';
 import FormAlert from '@/components/ui/FormAlert';
+import PasswordInput from '@/components/ui/PasswordInput';
 import Logo from '@/components/ui/Logo';
 
 function LoginForm() {
@@ -105,9 +106,8 @@ function LoginForm() {
               </Link>
             }
           >
-            <input
-              type="password"
-              className={`input-field ${errors.password ? 'input-field-error' : ''}`}
+            <PasswordInput
+              className={errors.password ? 'input-field-error' : ''}
               {...register('password', { required: 'Password is required' })}
             />
           </FormField>
