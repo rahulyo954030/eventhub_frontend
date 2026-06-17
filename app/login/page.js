@@ -4,16 +4,17 @@ import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import Link from 'next/link';
-import toast from 'react-hot-toast';
 import { useAuth } from '@/context/AuthContext';
-import { getErrorMessage } from '@/utils/helpers';
+import { getAuthFeedback } from '@/utils/helpers';
 import { getPostLoginPath } from '@/utils/authRedirect';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import FormField from '@/components/ui/FormField';
+import FormAlert from '@/components/ui/FormAlert';
 import Logo from '@/components/ui/Logo';
 
 function LoginForm() {
   const [loading, setLoading] = useState(false);
+  const [formMessage, setFormMessage] = useState(null);
   const { login, isAuthenticated, loading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -28,12 +29,17 @@ function LoginForm() {
 
   const onSubmit = async (data) => {
     setLoading(true);
+    setFormMessage(null);
     try {
       await login(data);
-      toast.success('Welcome back');
       router.replace(afterLoginPath);
     } catch (error) {
-      toast.error(getErrorMessage(error));
+      const feedback = getAuthFeedback(error);
+      setFormMessage({
+        variant: feedback.variant,
+        title: feedback.title,
+        message: feedback.message,
+      });
     } finally {
       setLoading(false);
     }
@@ -64,6 +70,22 @@ function LoginForm() {
         <p className="mt-2 text-sm text-ink-muted">
           Use the email and password for your staff account.
         </p>
+
+        {formMessage && (
+          <div className="mt-6">
+            <FormAlert variant={formMessage.variant} title={formMessage.title}>
+              {formMessage.message}
+              {formMessage.title === 'Email not verified' && (
+                <>
+                  {' '}
+                  <Link href="/signup" className="font-semibold text-red-800 underline-offset-2 hover:underline">
+                    Create a new account
+                  </Link>
+                </>
+              )}
+            </FormAlert>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-5">
           <FormField label="Email" error={errors.email?.message}>

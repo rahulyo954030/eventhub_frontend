@@ -18,15 +18,17 @@ const isRouteMatch = (pathname, routes) =>
 export function middleware(request) {
   const { pathname, search } = request.nextUrl;
   const hasAccessToken = Boolean(request.cookies.get('accessToken')?.value);
+  const hasRefreshToken = Boolean(request.cookies.get('refreshToken')?.value);
+  const hasAuthSession = hasAccessToken || hasRefreshToken;
 
-  if (isRouteMatch(pathname, PROTECTED_ROUTES) && !hasAccessToken) {
+  if (isRouteMatch(pathname, PROTECTED_ROUTES) && !hasAuthSession) {
     const loginUrl = new URL('/login', request.url);
     const nextPath = `${pathname}${search || ''}`;
     loginUrl.searchParams.set('next', nextPath);
     return NextResponse.redirect(loginUrl);
   }
 
-  if (isRouteMatch(pathname, AUTH_ROUTES) && hasAccessToken) {
+  if (isRouteMatch(pathname, AUTH_ROUTES) && hasAuthSession) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 

@@ -1,6 +1,7 @@
 import api from './api';
 
 export const authService = {
+  register: (data) => api.post('/auth/register', data),
   login: (data) => api.post('/auth/login', data),
   logout: () => api.post('/auth/logout'),
   refresh: () => api.post('/auth/refresh'),
@@ -21,6 +22,11 @@ export const authService = {
   verifyEmail: (token) => api.post('/auth/verify-email', { token }),
   clearSession: () => api.post('/auth/clear-session'),
   claimAdmin: () => api.post('/auth/claim-admin'),
+  promoteAdmin: (email) => api.post('/auth/promote-admin', { email }),
+  demoteAdmin: (email) => api.post('/auth/demote-admin', { email }),
+  getTeamMembers: () => api.get('/auth/team-members'),
+  createStaffInvite: (email) => api.post('/auth/staff-invites', { email }),
+  listStaffInvites: () => api.get('/auth/staff-invites'),
 };
 
 export const eventService = {

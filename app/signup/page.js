@@ -1,22 +1,25 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import Link from 'next/link';
-import toast from 'react-hot-toast';
 import api from '@/services/api';
 import { useAuth } from '@/context/AuthContext';
-import { getErrorMessage } from '@/utils/helpers';
+import { getAuthFeedback } from '@/utils/helpers';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import FormField from '@/components/ui/FormField';
+import FormAlert from '@/components/ui/FormAlert';
 import Logo from '@/components/ui/Logo';
 
-export default function SignupPage() {
+function SignupForm() {
   const [loading, setLoading] = useState(false);
+  const [formMessage, setFormMessage] = useState(null);
   const { isAuthenticated, loading: authLoading } = useAuth();
   const router = useRouter();
-  const { register, handleSubmit, watch, formState: { errors } } = useForm();
+  const searchParams = useSearchParams();
+  const inviteToken = searchParams?.get('invite');
+  const { register, handleSubmit, watch, reset, formState: { errors } } = useForm();
 
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
@@ -26,21 +29,30 @@ export default function SignupPage() {
 
   const onSubmit = async (data) => {
     setLoading(true);
+    setFormMessage(null);
     try {
       const response = await api.post('/auth/register', {
         name: data.name,
         email: data.email,
         password: data.password,
+        ...(inviteToken ? { inviteToken } : {}),
       });
       const role = response?.data?.data?.role;
-      if (role === 'Admin') {
-        toast.success('Account created. Check your email to verify, then sign in.');
-      } else {
-        toast.success('Account created as staff. Verify your email, then sign in.');
-      }
-      router.push('/login');
+      reset();
+      setFormMessage({
+        variant: 'success',
+        title: 'Account created',
+        message: role === 'Admin'
+          ? 'We sent a verification link to your email. Please check your inbox (and spam), verify your account, then sign in.'
+          : 'We sent a verification link to your email. Please check your inbox (and spam), verify your account, then sign in as Event Staff.',
+      });
     } catch (error) {
-      toast.error(getErrorMessage(error));
+      const feedback = getAuthFeedback(error);
+      setFormMessage({
+        variant: feedback.variant,
+        title: feedback.title,
+        message: feedback.message,
+      });
     } finally {
       setLoading(false);
     }
@@ -69,8 +81,34 @@ export default function SignupPage() {
         <div className="auth-card">
         <h1 className="auth-heading">Create account</h1>
         <p className="mt-2 text-sm text-ink-muted">
-          First person to sign up becomes admin if none exists yet.
+          {inviteToken
+            ? 'Complete signup to join as Event Staff.'
+            : 'First person to sign up becomes admin if none exists yet.'}
         </p>
+
+        {formMessage && (
+          <div className="mt-6">
+            <FormAlert variant={formMessage.variant} title={formMessage.title}>
+              {formMessage.message}
+              {formMessage.variant === 'success' && (
+                <>
+                  {' '}
+                  <Link href="/login" className="font-semibold text-primary-800 underline-offset-2 hover:underline">
+                    Go to sign in
+                  </Link>
+                </>
+              )}
+              {formMessage.title === 'Email already registered' && (
+                <>
+                  {' '}
+                  <Link href="/login" className="font-semibold text-red-800 underline-offset-2 hover:underline">
+                    Sign in
+                  </Link>
+                </>
+              )}
+            </FormAlert>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-5">
           <FormField label="Your name" required error={errors.name?.message}>
@@ -120,5 +158,19 @@ export default function SignupPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense
+      fallback={(
+        <div className="flex h-screen items-center justify-center bg-surface">
+          <LoadingSpinner size="lg" />
+        </div>
+      )}
+    >
+      <SignupForm />
+    </Suspense>
   );
 }

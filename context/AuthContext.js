@@ -74,6 +74,35 @@ export function AuthProvider({ children }) {
   }, [isPublicPath, pathname]);
 
   useEffect(() => {
+    if (!user) return undefined;
+
+    const refreshSession = async () => {
+      try {
+        await authService.refresh();
+        const response = await authService.validateSession();
+        if (response.data.data?.valid) {
+          setUser(response.data.data.user);
+        }
+      } catch {
+        // Next API call will handle sign-out if refresh is no longer valid.
+      }
+    };
+
+    const interval = setInterval(refreshSession, 12 * 60 * 1000);
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') {
+        refreshSession();
+      }
+    };
+
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, [user]);
+
+  useEffect(() => {
     const init = async () => {
       if (isPublicPath(pathname)) {
         setLoading(false);
