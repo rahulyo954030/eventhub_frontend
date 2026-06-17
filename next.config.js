@@ -1,6 +1,18 @@
 /** @type {import('next').NextConfig} */
+const { getBackendBaseUrl } = require('./utils/apiConfig');
+
+const backendBase = getBackendBaseUrl();
+
 const nextConfig = {
   reactStrictMode: true,
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: `${backendBase}/api/:path*`,
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
