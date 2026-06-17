@@ -15,7 +15,6 @@ import { getAuthFeedback, getErrorMessage } from '@/utils/helpers';
 
 export default function SettingsPage() {
   const [loading, setLoading] = useState(false);
-  const [claiming, setClaiming] = useState(false);
   const [inviting, setInviting] = useState(false);
   const [teamLoading, setTeamLoading] = useState(false);
   const [roleActionId, setRoleActionId] = useState(null);
@@ -62,19 +61,6 @@ export default function SettingsPage() {
       toast.error(getErrorMessage(error));
     } finally {
       setLoading(false);
-    }
-  };
-
-  const claimAdmin = async () => {
-    setClaiming(true);
-    try {
-      const response = await authService.claimAdmin();
-      updateUser(response.data.data);
-      toast.success('You are now Admin');
-    } catch (error) {
-      toast.error(getErrorMessage(error));
-    } finally {
-      setClaiming(false);
     }
   };
 
@@ -201,16 +187,10 @@ export default function SettingsPage() {
 
         <div className="form-shell">
           {!isAdmin && (
-            <FormSection title="Admin access" description="Only needed if no admin exists yet.">
-              <button
-                type="button"
-                className="btn-secondary text-sm"
-                onClick={claimAdmin}
-                disabled={claiming}
-              >
-                {claiming ? 'Claiming…' : 'Claim admin role'}
-              </button>
-            </FormSection>
+            <FormSection
+              title="Event Staff access"
+              description="You were invited to this workspace. Contact an admin if you need additional permissions."
+            />
           )}
 
           {isAdmin && (

@@ -82,8 +82,8 @@ function SignupForm() {
         <h1 className="auth-heading">Create account</h1>
         <p className="mt-2 text-sm text-ink-muted">
           {inviteToken
-            ? 'Complete signup to join as Event Staff.'
-            : 'First person to sign up becomes admin if none exists yet.'}
+            ? 'Complete signup to join your team as Event Staff.'
+            : 'Create your own workspace. You will be the admin for your events and team.'}
         </p>
 
         {formMessage && (
